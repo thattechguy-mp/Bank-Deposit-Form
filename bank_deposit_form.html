@@ -235,11 +235,6 @@ textarea{
   background:var(--blue);
   color:#fff;
 }
-.btn-outline{
-  background:#fff;
-  color:#111827;
-  border:1px solid var(--line);
-}
 .status{
   min-height:26px;
   margin-top:14px;
@@ -255,7 +250,7 @@ textarea{
   font-size:12px;
   line-height:1.7;
 }
-.confirm-modal, .crop-modal{
+.confirm-modal{
   position:fixed;
   inset:0;
   background:rgba(15,23,42,.45);
@@ -265,17 +260,14 @@ textarea{
   z-index:9999;
   padding:16px;
 }
-.confirm-card, .crop-card{
+.confirm-card{
   width:min(520px,100%);
   background:#fff;
   border-radius:18px;
   box-shadow:0 20px 44px rgba(15,23,42,.24);
   overflow:hidden;
 }
-.crop-card{
-  width:min(980px,100%);
-}
-.confirm-head, .crop-head{
+.confirm-head{
   padding:18px 20px;
   background:linear-gradient(135deg,var(--blue),var(--navy));
   color:#fff;
@@ -287,82 +279,81 @@ textarea{
   color:#344054;
   line-height:1.6;
 }
-.confirm-actions, .crop-actions{
+.confirm-actions{
   display:flex;
   justify-content:flex-end;
   gap:12px;
   padding:0 20px 20px;
 }
-.crop-body{
-  padding:18px 20px 12px;
-}
-.crop-note{
-  font-size:13px;
-  color:#475467;
-  margin-bottom:12px;
-  line-height:1.5;
-}
-.crop-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 290px;
-  gap:16px;
-  align-items:start;
-}
-.crop-stage{
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:#eef2f6;
-  padding:10px;
-}
-.crop-canvas-wrap{
-  position:relative;
-  width:100%;
-  min-height:420px;
-  overflow:auto;
-}
-#cropCanvas{
-  width:100%;
-  display:block;
-  border-radius:12px;
-  background:#fff;
-  touch-action:none;
-}
-.crop-side{
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:#fcfcfd;
-  padding:12px;
-}
-.crop-side h4{
-  margin:0 0 10px;
-  font-size:14px;
-  color:#344054;
-}
-.crop-side img{
-  width:100%;
-  display:block;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:12px;
-}
-.crop-side .small-note{
-  margin-top:10px;
-}
 .hidden{ display:none !important; }
 
-@media (max-width:900px){
-  .crop-grid{grid-template-columns:1fr}
-}
 @media (max-width:780px){
   .hero-top{ flex-direction:column; align-items:center; text-align:center; }
   .hero-copy{ text-align:center; }
   .grid, .preview-grid{ grid-template-columns:1fr; }
-  .actions, .confirm-actions, .crop-actions{ flex-direction:column; }
+  .actions{ flex-direction:column; }
   .btn{ width:100%; }
 }
+
+/* Mobile crop editor stability fix */
+.crop-modal{
+  overflow:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.crop-card{
+  max-height:calc(100vh - 24px);
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.crop-canvas-wrap{
+  max-height:65vh;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+@media (max-width:780px){
+  .crop-modal{
+    align-items:flex-start;
+    padding:8px;
+  }
+  .crop-card{
+    width:100%;
+    max-height:calc(100vh - 16px);
+    margin:0;
+    border-radius:16px;
+  }
+  .crop-body{
+    padding:12px 12px 8px;
+  }
+  .crop-canvas-wrap{
+    min-height:280px;
+    max-height:50vh;
+  }
+  .crop-actions{
+    position:sticky;
+    bottom:0;
+    background:#fff;
+    padding:12px;
+    border-top:1px solid #d0d5dd;
+    z-index:3;
+  }
+  .crop-side{
+    display:none;
+  }
+}
+
+
+/* Full mobile crop handle visibility fix */
+#cropCanvas{
+  touch-action:none !important;
+  -ms-touch-action:none !important;
+}
+.crop-canvas-wrap{
+  background:#eef2f6;
+}
+
 </style>
 <script src="https://unpkg.com/bwip-js/dist/bwip-js-min.js"></script>
-<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
 </head>
 <body>
 <div class="wrapper">
@@ -373,7 +364,7 @@ textarea{
         <div class="hero-copy">
           <div class="badge">Aldine Storage - Deposit Reporting</div>
           <h1>Bank Deposit Form</h1>
-          <p>Upload the SiteLink Management Summary and the bank deposit receipt, record the bank, date, time, mileage, and employee who made the deposit in order to generate an accurate confirmation copy for office reporting.</p>
+          <p>Upload the SiteLink Management Summary and the bank deposit receipt, record the bank, date, time, mileage, and employee who made the deposit, in order to generate an accurate confirmation copy for office reporting.</p>
         </div>
       </div>
     </div>
@@ -424,7 +415,7 @@ textarea{
             <input id="milesTraveled" name="milesTraveled" type="number" min="0" step="0.1" placeholder="0.0" required>
           </div>
           <div class="field-wrap">
-            <label for="mileageRate">Mileage Rate (Lawful 2026 Business Rate)</label>
+            <label for="mileageRate">Mileage Rate</label>
             <input id="mileageRate" name="mileageRate" class="readonly" type="text" value="0.725" readonly>
             <div class="small-note">Calculated at $0.725 per mile.</div>
           </div>
@@ -441,12 +432,12 @@ textarea{
           <div class="field-wrap">
             <label for="managementSummaryFile">SiteLink Management Summary <span class="req">*</span></label>
             <input id="managementSummaryFile" type="file" accept="image/*" required>
-            <div class="small-note">Upload a clear photo or scan of the printed Management Summary. Auto-crop will open after selection.</div>
+            <div class="small-note">Upload a clear photo or scan of the printed Management Summary.</div>
           </div>
           <div class="field-wrap">
             <label for="depositReceiptFile">Bank Deposit Receipt <span class="req">*</span></label>
             <input id="depositReceiptFile" type="file" accept="image/*" required>
-            <div class="small-note">Upload a clear photo or scan of the bank deposit receipt. Auto-crop will open after selection.</div>
+            <div class="small-note">Upload a clear photo or scan of the bank deposit receipt.</div>
           </div>
 
           <div class="field-wrap full">
@@ -505,41 +496,31 @@ textarea{
   </div>
 </div>
 
-<div id="cropModal" class="crop-modal">
-  <div class="crop-card">
-    <div class="crop-head">Adjust Document Crop</div>
-    <div class="crop-body">
-      <div class="crop-note">
-        The form will try to detect the paper edges automatically. If the corners are not accurate, drag the four markers to the page corners, then click <strong>Apply Crop</strong>.
-      </div>
-      <div class="crop-grid">
-        <div class="crop-stage">
-          <div class="crop-canvas-wrap">
-            <canvas id="cropCanvas"></canvas>
-          </div>
-        </div>
-        <div class="crop-side">
-          <h4>Current Crop Result</h4>
-          <img id="cropPreviewImage" alt="Crop Preview">
-          <div class="small-note">Best results happen when the full page is visible, the background contrasts with the paper, and the image is clear and legible.</div>
-        </div>
-      </div>
-    </div>
-    <div class="crop-actions">
-      <button type="button" class="btn btn-outline" id="cropReset">Reset Corners</button>
-      <button type="button" class="btn btn-secondary" id="cropCancel">Cancel</button>
-      <button type="button" class="btn btn-primary" id="cropApply">Apply Crop</button>
-    </div>
-  </div>
-</div>
-
 <iframe name="submissionFrame" id="submissionFrame" class="hidden"></iframe>
 
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxR78MAOJocvnOjqgSEDZJ33VeMdcVHyKJV_dxX9RPw1j5RIk1hVQl5pg4UqN-AIQ/exec';
 const MILEAGE_RATE = 0.725;
 const BANKS = [
-  'JPMorgan Chase Bank, N.A.','Bank of America','Wells Fargo','Citibank','Capital One','PNC Bank','Truist','U.S. Bank','Regions Bank','Frost Bank','Amegy Bank','Woodforest National Bank','Prosperity Bank','Comerica Bank','Huntington Bank','TD Bank','BMO','M&T Bank','Other'
+  'JPMorgan Chase Bank, N.A.',
+  'Bank of America',
+  'Wells Fargo',
+  'Citibank',
+  'Capital One',
+  'PNC Bank',
+  'Truist',
+  'U.S. Bank',
+  'Regions Bank',
+  'Frost Bank',
+  'Amegy Bank',
+  'Woodforest National Bank',
+  'Prosperity Bank',
+  'Comerica Bank',
+  'Huntington Bank',
+  'TD Bank',
+  'BMO',
+  'M&T Bank',
+  'Other'
 ];
 
 const form = document.getElementById('depositForm');
@@ -566,41 +547,10 @@ const modal = document.getElementById('confirmModal');
 const cancelSend = document.getElementById('cancelSend');
 const confirmSend = document.getElementById('confirmSend');
 
-const cropModal = document.getElementById('cropModal');
-const cropCanvas = document.getElementById('cropCanvas');
-const cropCtx = cropCanvas.getContext('2d');
-const cropPreviewImage = document.getElementById('cropPreviewImage');
-const cropReset = document.getElementById('cropReset');
-const cropCancel = document.getElementById('cropCancel');
-const cropApply = document.getElementById('cropApply');
-
 let summaryImageData = '';
 let receiptImageData = '';
 let pendingSubmit = false;
 let submitTimeoutId = null;
-let cropSession = null;
-let cvReady = false;
-
-function waitForOpenCv() {
-  return new Promise(function(resolve) {
-    if (cvReady || (window.cv && cv.Mat)) {
-      cvReady = true;
-      resolve();
-      return;
-    }
-    const timer = setInterval(function() {
-      if (window.cv && cv.Mat) {
-        clearInterval(timer);
-        cvReady = true;
-        resolve();
-      }
-    }, 150);
-    setTimeout(function() {
-      clearInterval(timer);
-      resolve();
-    }, 6000);
-  });
-}
 
 function fillBankOptions() {
   BANKS.forEach(function(bank){
@@ -655,7 +605,7 @@ function generateBarcode() {
       scale: 3,
       height: 18,
       includetext: false,
-      textxalign: 'center'
+      textxalign: 'center',
     });
     barcodeDataUrlInput.value = canvas.toDataURL('image/png');
   } catch (err) {
@@ -663,12 +613,23 @@ function generateBarcode() {
   }
 }
 
-function loadImageFile(file) {
+function readImageAsCompressedDataUrl(file) {
   return new Promise(function(resolve, reject) {
     const reader = new FileReader();
     reader.onload = function(e) {
       const img = new Image();
-      img.onload = function() { resolve(img); };
+      img.onload = function() {
+        const maxW = 1800;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.86));
+      };
       img.onerror = reject;
       img.src = e.target.result;
     };
@@ -677,265 +638,7 @@ function loadImageFile(file) {
   });
 }
 
-function clonePoints(points) {
-  return points.map(function(p){ return {x:p.x, y:p.y}; });
-}
-
-function orderPoints(pts) {
-  const sums = pts.map(p => p.x + p.y);
-  const diffs = pts.map(p => p.x - p.y);
-  const tl = pts[sums.indexOf(Math.min(...sums))];
-  const br = pts[sums.indexOf(Math.max(...sums))];
-  const tr = pts[diffs.indexOf(Math.max(...diffs))];
-  const bl = pts[diffs.indexOf(Math.min(...diffs))];
-  return [tl, tr, br, bl];
-}
-
-function dist(a,b) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function autoDetectCornersFromImage(img) {
-  const margin = 24;
-  const fallback = [
-    {x: margin, y: margin},
-    {x: img.width - margin, y: margin},
-    {x: img.width - margin, y: img.height - margin},
-    {x: margin, y: img.height - margin}
-  ];
-
-  if (!(window.cv && cv.Mat)) return fallback;
-
-  let src=null, gray=null, blur=null, edge=null, contours=null, hierarchy=null;
-  try {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = img.width;
-    tempCanvas.height = img.height;
-    const tctx = tempCanvas.getContext('2d');
-    tctx.drawImage(img, 0, 0);
-
-    src = cv.imread(tempCanvas);
-    gray = new cv.Mat();
-    blur = new cv.Mat();
-    edge = new cv.Mat();
-    contours = new cv.MatVector();
-    hierarchy = new cv.Mat();
-
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-    cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0, 0, cv.BORDER_DEFAULT);
-    cv.Canny(blur, edge, 75, 200);
-    cv.findContours(edge, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-
-    let best = null;
-    let bestArea = 0;
-
-    for (let i = 0; i < contours.size(); i++) {
-      const cnt = contours.get(i);
-      const peri = cv.arcLength(cnt, true);
-      const approx = new cv.Mat();
-      cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
-
-      if (approx.rows === 4) {
-        const area = Math.abs(cv.contourArea(approx));
-        if (area > bestArea) {
-          bestArea = area;
-          if (best) best.delete();
-          best = approx.clone();
-        }
-      }
-      approx.delete();
-      cnt.delete();
-    }
-
-    if (best && bestArea > (img.width * img.height * 0.15)) {
-      const pts = [];
-      for (let i = 0; i < 4; i++) {
-        pts.push({
-          x: best.data32S[i * 2],
-          y: best.data32S[i * 2 + 1]
-        });
-      }
-      best.delete();
-      return orderPoints(pts);
-    }
-    if (best) best.delete();
-    return fallback;
-  } catch (err) {
-    return fallback;
-  } finally {
-    if (src) src.delete();
-    if (gray) gray.delete();
-    if (blur) blur.delete();
-    if (edge) edge.delete();
-    if (contours) contours.delete();
-    if (hierarchy) hierarchy.delete();
-  }
-}
-
-function fitCropCanvasToImage(img) {
-  const wrapWidth = Math.min(cropCanvas.parentElement.clientWidth - 2, 640);
-  const scale = Math.min(1, wrapWidth / img.width);
-  cropCanvas.width = Math.round(img.width * scale);
-  cropCanvas.height = Math.round(img.height * scale);
-  cropCanvas.style.width = cropCanvas.width + 'px';
-  cropCanvas.style.height = cropCanvas.height + 'px';
-  return scale;
-}
-
-function drawCropStage() {
-  if (!cropSession) return;
-  const img = cropSession.img;
-  const scale = cropSession.displayScale;
-  cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-  cropCtx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
-
-  const pts = cropSession.points;
-  cropCtx.save();
-  cropCtx.strokeStyle = '#00A1FB';
-  cropCtx.lineWidth = 3;
-  cropCtx.fillStyle = 'rgba(0,161,251,.15)';
-  cropCtx.beginPath();
-  cropCtx.moveTo(pts[0].x * scale, pts[0].y * scale);
-  for (let i = 1; i < pts.length; i++) cropCtx.lineTo(pts[i].x * scale, pts[i].y * scale);
-  cropCtx.closePath();
-  cropCtx.fill();
-  cropCtx.stroke();
-
-  pts.forEach(function(p) {
-    cropCtx.beginPath();
-    cropCtx.fillStyle = '#ffffff';
-    cropCtx.arc(p.x * scale, p.y * scale, 8, 0, Math.PI * 2);
-    cropCtx.fill();
-    cropCtx.lineWidth = 3;
-    cropCtx.strokeStyle = '#241f51';
-    cropCtx.stroke();
-  });
-  cropCtx.restore();
-}
-
-function buildWarpedDocumentDataUrl(img, pts) {
-  const ordered = orderPoints(pts);
-  const [tl, tr, br, bl] = ordered;
-  const widthA = dist(br, bl);
-  const widthB = dist(tr, tl);
-  const maxWidth = Math.max(widthA, widthB);
-  const heightA = dist(tr, br);
-  const heightB = dist(tl, bl);
-  const maxHeight = Math.max(heightA, heightB);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(maxWidth));
-  canvas.height = Math.max(1, Math.round(maxHeight));
-
-  if (window.cv && cv.Mat) {
-    let src=null, dst=null, srcTri=null, dstTri=null, M=null;
-    try {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = img.width;
-      tempCanvas.height = img.height;
-      tempCanvas.getContext('2d').drawImage(img, 0, 0);
-      src = cv.imread(tempCanvas);
-      dst = new cv.Mat();
-      srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        tl.x, tl.y,
-        tr.x, tr.y,
-        br.x, br.y,
-        bl.x, bl.y
-      ]);
-      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        0, 0,
-        canvas.width - 1, 0,
-        canvas.width - 1, canvas.height - 1,
-        0, canvas.height - 1
-      ]);
-      M = cv.getPerspectiveTransform(srcTri, dstTri);
-      cv.warpPerspective(src, dst, M, new cv.Size(canvas.width, canvas.height), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
-      cv.imshow(canvas, dst);
-      return canvas.toDataURL('image/jpeg', 0.9);
-    } catch (err) {
-      // fall through to canvas fallback
-    } finally {
-      if (src) src.delete();
-      if (dst) dst.delete();
-      if (srcTri) srcTri.delete();
-      if (dstTri) dstTri.delete();
-      if (M) M.delete();
-    }
-  }
-
-  // Fallback: return original image scaled if OpenCV perspective transform unavailable
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.9);
-}
-
-function openCropModal(targetKey, file, img) {
-  const detected = autoDetectCornersFromImage(img);
-  const ordered = orderPoints(detected);
-
-  cropSession = {
-    key: targetKey,
-    file: file,
-    img: img,
-    originalPoints: clonePoints(ordered),
-    points: clonePoints(ordered),
-    displayScale: fitCropCanvasToImage(img),
-    dragIndex: -1
-  };
-
-  drawCropStage();
-  updateCropPreview();
-  cropModal.style.display = 'flex';
-}
-
-function updateCropPreview() {
-  if (!cropSession) return;
-  cropPreviewImage.src = buildWarpedDocumentDataUrl(cropSession.img, cropSession.points);
-}
-
-function pickCorner(x, y) {
-  if (!cropSession) return -1;
-  const scale = cropSession.displayScale;
-  const pts = cropSession.points;
-  for (let i = 0; i < pts.length; i++) {
-    const dx = x - (pts[i].x * scale);
-    const dy = y - (pts[i].y * scale);
-    if (Math.hypot(dx, dy) <= 16) return i;
-  }
-  return -1;
-}
-
-function canvasPos(evt) {
-  const rect = cropCanvas.getBoundingClientRect();
-  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
-  return { x: clientX - rect.left, y: clientY - rect.top };
-}
-
-function onCropDown(evt) {
-  if (!cropSession) return;
-  evt.preventDefault();
-  const p = canvasPos(evt);
-  cropSession.dragIndex = pickCorner(p.x, p.y);
-}
-
-function onCropMove(evt) {
-  if (!cropSession || cropSession.dragIndex < 0) return;
-  evt.preventDefault();
-  const p = canvasPos(evt);
-  const x = Math.max(0, Math.min(cropSession.img.width, p.x / cropSession.displayScale));
-  const y = Math.max(0, Math.min(cropSession.img.height, p.y / cropSession.displayScale));
-  cropSession.points[cropSession.dragIndex] = {x, y};
-  drawCropStage();
-  updateCropPreview();
-}
-
-function onCropUp() {
-  if (!cropSession) return;
-  cropSession.dragIndex = -1;
-}
-
-async function startCropWorkflow(fileInput, hiddenInput, nameInput, mainPreview, tilePreview, targetKey) {
+async function handleImageInput(fileInput, hiddenInput, nameInput, mainPreview, tilePreview, targetKey) {
   const file = fileInput.files && fileInput.files[0];
   if (!file) {
     hiddenInput.value = '';
@@ -947,39 +650,15 @@ async function startCropWorkflow(fileInput, hiddenInput, nameInput, mainPreview,
     updateComposite();
     return;
   }
-  showStatus('ok', 'Loading image and detecting document edges...');
-  await waitForOpenCv();
-  const img = await loadImageFile(file);
-  openCropModal(targetKey, file, img);
-
-  cropApply.onclick = function() {
-    const dataUrl = buildWarpedDocumentDataUrl(cropSession.img, cropSession.points);
-    hiddenInput.value = dataUrl;
-    nameInput.value = file.name || '';
-    mainPreview.src = dataUrl;
-    tilePreview.src = dataUrl;
-    mainPreview.classList.remove('hidden');
-    if (targetKey === 'summary') summaryImageData = dataUrl;
-    if (targetKey === 'receipt') receiptImageData = dataUrl;
-    updateComposite();
-    cropModal.style.display = 'none';
-    cropSession = null;
-    showStatus('ok', 'Document crop applied.');
-  };
-
-  cropReset.onclick = function() {
-    if (!cropSession) return;
-    cropSession.points = clonePoints(cropSession.originalPoints);
-    drawCropStage();
-    updateCropPreview();
-  };
-
-  cropCancel.onclick = function() {
-    cropModal.style.display = 'none';
-    cropSession = null;
-    fileInput.value = '';
-    showStatus('err', 'Crop cancelled. Please choose the file again if needed.');
-  };
+  const dataUrl = await readImageAsCompressedDataUrl(file);
+  hiddenInput.value = dataUrl;
+  nameInput.value = file.name || '';
+  mainPreview.src = dataUrl;
+  tilePreview.src = dataUrl;
+  mainPreview.classList.remove('hidden');
+  if (targetKey === 'summary') summaryImageData = dataUrl;
+  if (targetKey === 'receipt') receiptImageData = dataUrl;
+  updateComposite();
 }
 
 function updateComposite() {
@@ -1143,17 +822,17 @@ function sendPayload(payload) {
 
 summaryFileInput.addEventListener('change', async function() {
   try {
-    await startCropWorkflow(summaryFileInput, managementSummaryBase64Input, managementSummaryNameInput, summaryPreview, summaryPreviewTile, 'summary');
+    await handleImageInput(summaryFileInput, managementSummaryBase64Input, managementSummaryNameInput, summaryPreview, summaryPreviewTile, 'summary');
   } catch (err) {
-    showStatus('err', 'Unable to process the Management Summary image.');
+    showStatus('err', 'Unable to read the Management Summary image.');
   }
 });
 
 receiptFileInput.addEventListener('change', async function() {
   try {
-    await startCropWorkflow(receiptFileInput, depositReceiptBase64Input, depositReceiptNameInput, receiptPreview, receiptPreviewTile, 'receipt');
+    await handleImageInput(receiptFileInput, depositReceiptBase64Input, depositReceiptNameInput, receiptPreview, receiptPreviewTile, 'receipt');
   } catch (err) {
-    showStatus('err', 'Unable to process the bank deposit receipt image.');
+    showStatus('err', 'Unable to read the bank deposit receipt image.');
   }
 });
 
@@ -1183,18 +862,7 @@ confirmSend.addEventListener('click', function(){
 
 window.addEventListener('click', function(e){
   if (e.target === modal) modal.style.display = 'none';
-  if (e.target === cropModal) {
-    cropModal.style.display = 'none';
-    cropSession = null;
-  }
 });
-
-cropCanvas.addEventListener('mousedown', onCropDown);
-cropCanvas.addEventListener('mousemove', onCropMove);
-window.addEventListener('mouseup', onCropUp);
-cropCanvas.addEventListener('touchstart', onCropDown, {passive:false});
-cropCanvas.addEventListener('touchmove', onCropMove, {passive:false});
-window.addEventListener('touchend', onCropUp, {passive:false});
 
 form.addEventListener('reset', function(){
   window.setTimeout(function(){
