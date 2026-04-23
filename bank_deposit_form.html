@@ -431,12 +431,12 @@ textarea{
 
           <div class="field-wrap">
             <label for="managementSummaryFile">SiteLink Management Summary <span class="req">*</span></label>
-            <input id="managementSummaryFile" type="file" accept="image/*" required>
+            <input id="managementSummaryFile" type="file" accept="image/*,.pdf,application/pdf" required>
             <div class="small-note">Upload a clear photo or scan of the printed Management Summary.</div>
           </div>
           <div class="field-wrap">
             <label for="depositReceiptFile">Bank Deposit Receipt <span class="req">*</span></label>
-            <input id="depositReceiptFile" type="file" accept="image/*" required>
+            <input id="depositReceiptFile" type="file" accept="image/*,.pdf,application/pdf" required>
             <div class="small-note">Upload a clear photo or scan of the bank deposit receipt.</div>
           </div>
 
@@ -500,6 +500,10 @@ textarea{
 
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxR78MAOJocvnOjqgSEDZJ33VeMdcVHyKJV_dxX9RPw1j5RIk1hVQl5pg4UqN-AIQ/exec';
+
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 const MILEAGE_RATE = 0.725;
 const BANKS = [
   'JPMorgan Chase Bank, N.A.',
